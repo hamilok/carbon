@@ -42,7 +42,7 @@ os_net_bcm57xx_init:
 	rol eax, 8
 	mov [os_NetMAC+5], al
 
-	; Enable the Network IRQ in the PIC 
+	; Enable the Network IRQ in the PIC
 	; IRQ value 0-7 set to zero bit 0-7 in 0x21 and value 8-15 set to zero bit 0-7 in 0xa1
 	in al, 0x21				; low byte target 0x21
 	mov bl, al

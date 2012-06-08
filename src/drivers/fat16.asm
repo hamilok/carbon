@@ -22,7 +22,7 @@ os_fat16_read_cluster:
 	jl near os_fat16_read_cluster_bailout	; as clusters start at 2
 
 ; Calculate the LBA address --- startingsector = (cluster-2) * clustersize + data_start
-	xor rcx, rcx	
+	xor rcx, rcx
 	mov cl, byte [fat16_SectorsPerCluster]
 	push rcx				; Save the number of sectors per cluster
 	sub ax, 2
@@ -89,7 +89,7 @@ os_fat16_write_cluster:
 	jl near os_fat16_write_cluster_bailout	; as clusters start at 2
 
 ; Calculate the LBA address --- startingsector = (cluster-2) * clustersize + data_start
-	xor rcx, rcx	
+	xor rcx, rcx
 	mov cl, byte [fat16_SectorsPerCluster]
 	push rcx				; Save the number of sectors per cluster
 	sub ax, 2
@@ -162,7 +162,7 @@ os_fat16_find_file_read_sector:
 os_fat16_find_file_next_entry:
 	cmp byte [rdi], 0x00		; end of records
 	je os_fat16_find_file_notfound
-	
+
 	mov rcx, 11
 	push rsi
 	repe cmpsb
@@ -232,7 +232,7 @@ os_fat16_get_file_list_read_sector:
 	mov rdi, hdbuffer1
 	mov rsi, rdi
 	mov rcx, 1
-	mov rax, rbx	
+	mov rax, rbx
 	call readsectors
 	pop rdi
 
@@ -488,12 +488,12 @@ clusterdone:
 ; At this point we have free cluster ID's on the stack
 
 ;	mov ax, 0xFFFF
-	
+
 
 
 ; At this point we have a sector of FAT in hdbuffer0. A cluster has been marked in use but the sector is not written back to disk yet!
 ; Save the sector # as we will write this to disk later
-	
+
 ; Load the first sector of the file info table
 	xor rax, rax
 	mov eax, [fat16_RootStart]	; eax points to the first sector of the root
@@ -615,7 +615,7 @@ os_fat16_file_delete_read_sector:
 os_fat16_file_delete_next_entry:
 	cmp byte [rdi], 0x00		; end of records
 	je os_fat16_file_delete_error
-	
+
 	mov rcx, 11
 	push rsi
 	repe cmpsb

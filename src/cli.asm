@@ -4,48 +4,48 @@ align 16
 
 
 os_command_line:
-	mov rsi, prompt			; Prompt for input
-	mov bl, 0x09			; Black background, Light Red text
-	call os_print_string_with_color
+  mov rsi, prompt			; Prompt for input
+  mov bl, 0x09			; Black background, Light Red text
+  call os_print_string_with_color
 
-	mov rdi, cli_temp_string
-	mov rcx, 250			; Limit the input to 250 characters
-	call os_input_string
-	call os_print_newline		; The user hit enter so print a new line
-	jrcxz os_command_line		; os_input_string stores the number of charaters received in RCX
+  mov rdi, cli_temp_string
+  mov rcx, 250			; Limit the input to 250 characters
+  call os_input_string
+  call os_print_newline		; The user hit enter so print a new line
+  jrcxz os_command_line		; os_input_string stores the number of charaters received in RCX
 
-	mov rsi, rdi
-	call os_string_parse		; Remove extra spaces
-	jrcxz os_command_line		; os_string_parse stores the number of words in RCX
-	mov byte [cli_args], cl		; Store the number of words in the string
+  mov rsi, rdi
+  call os_string_parse		; Remove extra spaces
+  jrcxz os_command_line		; os_string_parse stores the number of words in RCX
+  mov byte [cli_args], cl		; Store the number of words in the string
 
 ; Copy the first word in the string to a new string. This is the command/application to run
-	xor rcx, rcx
-	mov rsi, cli_temp_string
-	mov rdi, cli_command_string
-	push rdi			; Push the command string
+  xor rcx, rcx
+  mov rsi, cli_temp_string
+  mov rdi, cli_command_string
+  push rdi			; Push the command string
 nextbyte:
-	add rcx, 1
-	lodsb
-	cmp al, ' '			; End of the word
-	je endofcommand
-	cmp al, 0x00			; End of the string
-	je endofcommand
-	cmp rcx, 13			; More than 12 bytes
-	je endofcommand
-	stosb
-	jmp nextbyte
+  add rcx, 1
+  lodsb
+  cmp al, ' '			; End of the word
+  je endofcommand
+  cmp al, 0x00			; End of the string
+  je endofcommand
+  cmp rcx, 13			; More than 12 bytes
+  je endofcommand
+  stosb
+  jmp nextbyte
 endofcommand:
-	mov al, 0x00
-	stosb				; Terminate the string
+  mov al, 0x00
+  stosb				; Terminate the string
 
 ; At this point cli_command_string holds at least "a" and at most "abcdefgh.ijk"
 
-	; Break the contents of cli_temp_string into individual strings
-	mov rsi, cli_temp_string
-	mov al, 0x20
-	mov bl, 0x00
-	call os_string_change_char
+  ; Break the contents of cli_temp_string into individual strings
+  mov rsi, cli_temp_string
+  mov al, 0x20
+  mov bl, 0x00
+  call os_string_change_char
 
 	pop rsi				; Pop the command string
 	call os_string_uppercase	; Convert to uppercase for comparison
@@ -99,79 +99,79 @@ endofcommand:
 	jc near ifconfig
 
 ; At this point it is not one of the built-in CLI functions. Prepare to check the filesystem.
-	mov al, '.'
-	call os_string_find_char	; Check for a '.' in the string
-	cmp rax, 0
-	jne full_name			; If there was a '.' then a suffix is present
+  mov al, '.'
+  call os_string_find_char	; Check for a '.' in the string
+  cmp rax, 0
+  jne full_name			; If there was a '.' then a suffix is present
 
 ; No suffix was present so we add the default application suffix of ".APP"
 add_suffix:
-	call os_string_length
-	cmp rcx, 8
-	jg fail				; If the string is longer than 8 chars we can't add a suffix
+  call os_string_length
+  cmp rcx, 8
+  jg fail				; If the string is longer than 8 chars we can't add a suffix
 
-	mov rdi, cli_command_string
-	mov rsi, appextension		; '.APP'
-	call os_string_append		; Append the extension to the command string
+  mov rdi, cli_command_string
+  mov rsi, appextension		; '.APP'
+  call os_string_append		; Append the extension to the command string
 
 ; cli_command_string now contains a full filename
 full_name:
-	mov rsi, cli_command_string
-	mov rdi, programlocation	; We load the program to this location in memory (currently 0x00100000 : at the 2MB mark)
-	call os_file_read		; Read the file into memory
-	jc fail				; If carry is set then the file was not found
+  mov rsi, cli_command_string
+  mov rdi, programlocation	; We load the program to this location in memory (currently 0x00100000 : at the 2MB mark)
+  call os_file_read		; Read the file into memory
+  jc fail				; If carry is set then the file was not found
 
-	mov rax, programlocation	; 0x00100000 : at the 2MB mark
-	xor rbx, rbx			; No arguements required (The app can get them with os_get_argc and os_get_argv)
-	call os_smp_enqueue		; Queue the application to run on the next available core
-	jmp exit			; The CLI can quit now. IRQ 8 will restart it when the program is finished
+  mov rax, programlocation	; 0x00100000 : at the 2MB mark
+  xor rbx, rbx			; No arguements required (The app can get them with os_get_argc and os_get_argv)
+  call os_smp_enqueue		; Queue the application to run on the next available core
+  jmp exit			; The CLI can quit now. IRQ 8 will restart it when the program is finished
 
 fail:					; We didn't get a valid command or program name
-	mov rsi, not_found_msg
-	call os_print_string
-	jmp os_command_line
+  mov rsi, not_found_msg
+  call os_print_string
+  jmp os_command_line
 
 print_help:
-	mov rsi, help_text
-	call os_print_string
-	jmp os_command_line
+  mov rsi, help_text
+  call os_print_string
+  jmp os_command_line
 
 clear_screen:
-	call os_screen_clear
-	mov ax, 0x0018
-	call os_move_cursor
-	jmp os_command_line
+  call os_screen_clear
+  mov ax, 0x0018
+  call os_move_cursor
+  jmp os_command_line
 
 print_ver:
-	mov rsi, version_msg
-	call os_print_string
-	jmp os_command_line
+  mov rsi, version_msg
+  call os_print_string
+  jmp os_command_line
 
 list:
-	mov rdi, cli_temp_string
-	mov rsi, rdi
-	call os_file_get_list
-	call os_print_string
-	jmp os_command_line
+  mov rdi, cli_temp_string
+  mov rsi, rdi
+  call os_file_get_list
+  call os_print_string
+  jmp os_command_line
 
 date:
-	mov rdi, cli_temp_string
-	mov rsi, rdi
-	call os_get_date_string
-	call os_print_string
-	call os_print_newline
-	jmp os_command_line
+  mov rdi, cli_temp_string
+  mov rsi, rdi
+  call os_get_date_string
+  call os_print_string
+  call os_print_newline
+  jmp os_command_line
 
 time:
-	mov rdi, cli_temp_string
-	mov rsi, rdi
-	call os_get_time_string
-	call os_print_string
-	call os_print_newline
-	jmp os_command_line
+  mov rdi, cli_temp_string
+  mov rsi, rdi
+  call os_get_time_string
+  call os_print_string
+  call os_print_newline
+  jmp os_command_line
 
 node:
-	jmp os_command_line		; Nothing here yet...
+  jmp os_command_line		; Nothing here yet...
 
 align 16
 testzone:
@@ -179,7 +179,7 @@ testzone:
 
 ;	call os_ethernet_avail
 ;	call os_debug_dump_rax
-	
+
 ;	mov rdi, cli_temp_string
 ;	mov rsi, rdi
 ;	mov rcx, 12
@@ -272,9 +272,9 @@ testzone:
 ;	mov rax, 0x400000
 ;	call os_get_time_data
 
-	mov rax, [os_HPETAddress + 0xF0]
-	call os_debug_dump_rax
-	call os_print_newline
+  mov rax, [os_HPETAddress + 0xF0]
+  call os_debug_dump_rax
+  call os_print_newline
 
 
 ;	ud2
@@ -285,214 +285,214 @@ testzone:
 ;	xor rdx, rdx
 ;	div rax
 
-	jmp os_command_line
+  jmp os_command_line
 
 ifconfig:
-	call os_get_argc
-	cmp al, 1
-	je ifconfig_display
-	cmp al, 3
-	jl ifconfig_help
-	cmp al, 4
-	jg ifconfig_help
+  call os_get_argc
+  cmp al, 1
+  je ifconfig_display
+  cmp al, 3
+  jl ifconfig_help
+  cmp al, 4
+  jg ifconfig_help
 
-	; Filter the IP '.'s and the potential subnet '/'
-	xchg bx, bx
-	mov rsi, cli_temp_string
-	add rsi, 9			; skip past 'ifconfig '. Will need updating if command name changes
-	mov al, '/'
-	mov bl, 0x00
-	call os_string_change_char
-	mov al, '.'
-	mov bl, 0x00
-	call os_string_change_char	; At this point the input is '192 168 0 2 24 192.168.0.1'
+  ; Filter the IP '.'s and the potential subnet '/'
+  xchg bx, bx
+  mov rsi, cli_temp_string
+  add rsi, 9			; skip past 'ifconfig '. Will need updating if command name changes
+  mov al, '/'
+  mov bl, 0x00
+  call os_string_change_char
+  mov al, '.'
+  mov bl, 0x00
+  call os_string_change_char	; At this point the input is '192 168 0 2 24 192.168.0.1'
 
-	; Parse the Host IP
-	xor ebx, ebx
-	call os_string_to_int
-	mov bl, al
-	shl ebx, 8
-	call os_string_parse_next_word
-	call os_string_to_int
-	mov bl, al
-	shl ebx, 8
-	call os_string_parse_next_word
-	call os_string_to_int
-	mov bl, al
-	shl ebx, 8
-	call os_string_parse_next_word
-	call os_string_to_int
-	mov bl, al
-	call os_string_parse_next_word
-	bswap ebx
-	mov [ip], ebx
+  ; Parse the Host IP
+  xor ebx, ebx
+  call os_string_to_int
+  mov bl, al
+  shl ebx, 8
+  call os_string_parse_next_word
+  call os_string_to_int
+  mov bl, al
+  shl ebx, 8
+  call os_string_parse_next_word
+  call os_string_to_int
+  mov bl, al
+  shl ebx, 8
+  call os_string_parse_next_word
+  call os_string_to_int
+  mov bl, al
+  call os_string_parse_next_word
+  bswap ebx
+  mov [ip], ebx
 
-	; Parse the Subnet
-	call os_string_to_int
-	mov ecx, 32
-	sub ecx, eax
-	mov ebx, 0xFFFFFFFF
-	shl ebx, cl
-	bswap ebx
-	mov [sn], ebx
-	call os_string_parse_next_word
-	
-	; Parse the Gateway IP
-	mov al, '.'
-	mov bl, 0x00
-	call os_string_change_char	; Filter the Gateway IP '.'s
-	xor ebx, ebx
-	call os_string_to_int
-	mov bl, al
-	shl ebx, 8
-	call os_string_parse_next_word
-	call os_string_to_int
-	mov bl, al
-	shl ebx, 8
-	call os_string_parse_next_word
-	call os_string_to_int
-	mov bl, al
-	shl ebx, 8
-	call os_string_parse_next_word
-	call os_string_to_int
-	mov bl, al
-	call os_string_parse_next_word
-	bswap ebx
-	mov [gw], ebx
+  ; Parse the Subnet
+  call os_string_to_int
+  mov ecx, 32
+  sub ecx, eax
+  mov ebx, 0xFFFFFFFF
+  shl ebx, cl
+  bswap ebx
+  mov [sn], ebx
+  call os_string_parse_next_word
 
-	jmp os_command_line
-	
+  ; Parse the Gateway IP
+  mov al, '.'
+  mov bl, 0x00
+  call os_string_change_char	; Filter the Gateway IP '.'s
+  xor ebx, ebx
+  call os_string_to_int
+  mov bl, al
+  shl ebx, 8
+  call os_string_parse_next_word
+  call os_string_to_int
+  mov bl, al
+  shl ebx, 8
+  call os_string_parse_next_word
+  call os_string_to_int
+  mov bl, al
+  shl ebx, 8
+  call os_string_parse_next_word
+  call os_string_to_int
+  mov bl, al
+  call os_string_parse_next_word
+  bswap ebx
+  mov [gw], ebx
+
+  jmp os_command_line
+
 os_string_parse_next_word:
-	lodsb
-	cmp al, 0
-	jne os_string_parse_next_word
+  lodsb
+  cmp al, 0
+  jne os_string_parse_next_word
 
-	ret
+  ret
 
 ifconfig_display:
-	mov rsi, if_ip
-	call os_print_string
-	mov rdi, cli_temp_string
-	mov eax, [ip]
-	call ipv4addr_to_string
-	mov rsi, cli_temp_string
-	call os_print_string
+  mov rsi, if_ip
+  call os_print_string
+  mov rdi, cli_temp_string
+  mov eax, [ip]
+  call ipv4addr_to_string
+  mov rsi, cli_temp_string
+  call os_print_string
 
-	mov rsi, if_sn
-	call os_print_string
-	mov rdi, cli_temp_string
-	mov eax, [sn]
-	call ipv4addr_to_string
-	mov rsi, cli_temp_string
-	call os_print_string
-	
-	mov rsi, if_gw
-	call os_print_string
-	mov rdi, cli_temp_string
-	mov eax, [gw]
-	call ipv4addr_to_string
-	mov rsi, cli_temp_string
-	call os_print_string
-	
-	mov rsi, if_mc
-	call os_print_string
-	call os_debug_dump_MAC
-	call os_print_newline
-	jmp os_command_line
+  mov rsi, if_sn
+  call os_print_string
+  mov rdi, cli_temp_string
+  mov eax, [sn]
+  call ipv4addr_to_string
+  mov rsi, cli_temp_string
+  call os_print_string
+
+  mov rsi, if_gw
+  call os_print_string
+  mov rdi, cli_temp_string
+  mov eax, [gw]
+  call ipv4addr_to_string
+  mov rsi, cli_temp_string
+  call os_print_string
+
+  mov rsi, if_mc
+  call os_print_string
+  call os_debug_dump_MAC
+  call os_print_newline
+  jmp os_command_line
 
 ifconfig_help:
-	mov rsi, ifconfig_help_msg
-	call os_print_string
-	jmp os_command_line
+  mov rsi, ifconfig_help_msg
+  call os_print_string
+  jmp os_command_line
 
 reboot:
-	in al, 0x64
-	test al, 00000010b		; Wait for an empty Input Buffer
-	jne reboot
-	mov al, 0xFE
-	out 0x64, al			; Send the reboot call to the keyboard controller
-	jmp reboot
+  in al, 0x64
+  test al, 00000010b		; Wait for an empty Input Buffer
+  jne reboot
+  mov al, 0xFE
+  out 0x64, al			; Send the reboot call to the keyboard controller
+  jmp reboot
 
 debug:
-	call os_get_argc		; Check the argument number
-	cmp al, 1
-	je debug_dump_reg		; If it is only one then do a register dump
-	mov rcx, 16	
-	cmp al, 3			; Did we get at least 3?
-	jl noamount			; If not no amount was specified
-	mov al, 2
-	call os_get_argv		; Get the amount of bytes to display
-	call os_string_to_int		; Convert to an integer
-	mov rcx, rax
+  call os_get_argc		; Check the argument number
+  cmp al, 1
+  je debug_dump_reg		; If it is only one then do a register dump
+  mov rcx, 16
+  cmp al, 3			; Did we get at least 3?
+  jl noamount			; If not no amount was specified
+  mov al, 2
+  call os_get_argv		; Get the amount of bytes to display
+  call os_string_to_int		; Convert to an integer
+  mov rcx, rax
 noamount:
-	mov al, 1
-	call os_get_argv		; Get the starting memory address
-	call os_hex_string_to_int
-	mov rsi, rax
+  mov al, 1
+  call os_get_argv		; Get the starting memory address
+  call os_hex_string_to_int
+  mov rsi, rax
 debug_default:
-	call os_debug_dump_mem
-	call os_print_newline
+  call os_debug_dump_mem
+  call os_print_newline
 
-	jmp os_command_line
+  jmp os_command_line
 
 debug_dump_reg:
-	call os_debug_dump_reg
-	jmp os_command_line
+  call os_debug_dump_reg
+  jmp os_command_line
 
 exit:
-	ret
+  ret
 
 ; Strings
-	help_text		db 'Built-in commands: CLS, DATE, DEBUG, LIST, HELP, IFCONFIG, REBOOT, TIME, VER', 13, 0
-	not_found_msg		db 'Command or program not found', 13, 0
-	version_msg		db 'Carbon OS ', CARBONOS_VER, 13, 0
+  help_text		db 'Built-in commands: CLS, DATE, DEBUG, LIST, HELP, IFCONFIG, REBOOT, TIME, VER', 13, 0
+  not_found_msg		db 'Command or program not found', 13, 0
+  version_msg		db 'Carbon OS ', CARBONOS_VER, 13, 0
 
-	cls_string		db 'CLS', 0
-	ver_string		db 'VER', 0
-	list_string		db 'LIST', 0
-	date_string		db 'DATE', 0
-	exit_string		db 'EXIT', 0
-	help_string		db 'HELP', 0
-	node_string		db 'NODE', 0
-	time_string		db 'TIME', 0
-	debug_string		db 'DEBUG', 0
-	reboot_string		db 'REBOOT', 0
-	testzone_string		db 'TESTZONE', 0
-	ifconfig_string		db 'IFCONFIG', 0
-	if_ip			db 'IP:       ', 0
-	if_sn			db 13, 'Subnet:   ', 0
-	if_gw			db 13, 'Gateway:  ', 0
-	if_mc			db 13, 'Physical: 0x', 0
-	ifconfig_help_msg	db 'Invalid parameters.', 13, 'Usage is ifconfig IPAddress SubnetMask Gateway', 13, 'Example: ifconfig 192.168.0.2 24 192.168.0.1', 13, 0
+  cls_string		db 'CLS', 0
+  ver_string		db 'VER', 0
+  list_string		db 'LIST', 0
+  date_string		db 'DATE', 0
+  exit_string		db 'EXIT', 0
+  help_string		db 'HELP', 0
+  node_string		db 'NODE', 0
+  time_string		db 'TIME', 0
+  debug_string		db 'DEBUG', 0
+  reboot_string		db 'REBOOT', 0
+  testzone_string		db 'TESTZONE', 0
+  ifconfig_string		db 'IFCONFIG', 0
+  if_ip			db 'IP:       ', 0
+  if_sn			db 13, 'Subnet:   ', 0
+  if_gw			db 13, 'Gateway:  ', 0
+  if_mc			db 13, 'Physical: 0x', 0
+  ifconfig_help_msg	db 'Invalid parameters.', 13, 'Usage is ifconfig IPAddress SubnetMask Gateway', 13, 'Example: ifconfig 192.168.0.2 24 192.168.0.1', 13, 0
 
 
 ipv4addr_to_string:
-	push rbx
-	
-	mov ebx, eax
-	xor eax, eax
-	mov al, bl
-	call os_int_to_string
-	mov al, '.'
-	sub rdi, 1
-	stosb
-	shr ebx, 8
-	mov al, bl
-	call os_int_to_string
-	mov al, '.'
-	sub rdi, 1
-	stosb
-	shr ebx, 8
-	mov al, bl
-	call os_int_to_string
-	mov al, '.'
-	sub rdi, 1
-	stosb
-	shr ebx, 8
-	mov al, bl
-	call os_int_to_string
+  push rbx
 
-	pop rbx
+  mov ebx, eax
+  xor eax, eax
+  mov al, bl
+  call os_int_to_string
+  mov al, '.'
+  sub rdi, 1
+  stosb
+  shr ebx, 8
+  mov al, bl
+  call os_int_to_string
+  mov al, '.'
+  sub rdi, 1
+  stosb
+  shr ebx, 8
+  mov al, bl
+  call os_int_to_string
+  mov al, '.'
+  sub rdi, 1
+  stosb
+  shr ebx, 8
+  mov al, bl
+  call os_int_to_string
+
+  pop rbx
 ret
 
 ; =============================================================================

@@ -1,7 +1,7 @@
 run:
 	qemu-system-x86_64 -cpu core2duo -m 256 -smp 2 -net nic,model=rtl8139,vlan=1,macaddr=52:54:00:12:34:56 -hda build/drive.img
 
-build: src/main.asm
+build:
 	nasm -I ./src/ -o build/kernel src/main.asm
 
 install: build

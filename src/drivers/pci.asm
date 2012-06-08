@@ -48,7 +48,7 @@ os_pci_find_device:
 	mov rbx, rax			; Save device and vendor IDs to RBX
 	xor rcx, rcx
 	xor rax, rax
-	
+
 	mov ecx, 0x80000000		; Bit 31 must be set
 
 os_pci_find_device_check_next:
@@ -99,7 +99,7 @@ os_pci_dump_devices:
 
 	xor rcx, rcx
 	xor rax, rax
-	
+
 	mov ecx, 0x80000000		; Bit 31 must be set
 
 os_pci_dump_devices_check_next:

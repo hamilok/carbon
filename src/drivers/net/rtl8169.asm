@@ -44,7 +44,7 @@ os_net_rtl8169_init:
 	in al, dx
 	mov [os_NetMAC+5], al
 
-	; Enable the Network IRQ in the PIC 
+	; Enable the Network IRQ in the PIC
 	; IRQ value 0-7 set to zero bit 0-7 in 0x21 and value 8-15 set to zero bit 0-7 in 0xa1
 ;	in al, 0x21				; low byte target 0x21
 ;	mov bl, al
@@ -300,14 +300,14 @@ os_net_rtl8169_ack_int:
 	RTL8169_REG_CONFIG3	equ 0x54	; Configuration Register 3
 	RTL8169_REG_CONFIG4	equ 0x55	; Configuration Register 4
 	RTL8169_REG_CONFIG5	equ 0x56	; Configuration Register 5
-	RTL8169_REG_PHYAR	equ 0x60	; PHY Access Register 
-	RTL8169_REG_PHYStatus	equ 0x6C	; PHY(GMII, MII, or TBI) Status Register 
+	RTL8169_REG_PHYAR	equ 0x60	; PHY Access Register
+	RTL8169_REG_PHYStatus	equ 0x6C	; PHY(GMII, MII, or TBI) Status Register
 	RTL8169_REG_MAXRX	equ 0xDA	; Mac Receive Packet Size Register
 	RTL8169_REG_CCR		equ 0xE0	; C+ Command Register
 	RTL8169_REG_RDSAR	equ 0xE4	; Receive Descriptor Start Address Register (256-byte alignment)
 	RTL8169_REG_MAXTX	equ 0xEC	; Max Transmit Packet Size Register
 
-; Command Register (Offset 0037h, R/W)	
+; Command Register (Offset 0037h, R/W)
 	RTL8169_BIT_RST		equ 4		; Reset
 	RTL8169_BIT_RE		equ 3		; Receiver Enable
 	RTL8169_BIT_TE		equ 2		; Transmitter Enable
@@ -321,7 +321,7 @@ os_net_rtl8169_ack_int:
 	RTL8169_BIT_AAP		equ 0		; Accept All Packets with Destination Address
 
 ; PHY Register Table
-; BMCR (address 0x00) 
+; BMCR (address 0x00)
 	RTL8169_BIT_ANE		equ 12		; Auto-Negotiation Enable
 
 PHYConfig:

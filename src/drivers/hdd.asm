@@ -72,7 +72,7 @@ readsectors_nextsector:
 
 readsectors_dataready:
 	sub dx, 7		; Data port (0x1F0)
-	mov rcx, 256		; Read 
+	mov rcx, 256		; Read
 	rep insw		; Copy a 512 byte sector to RDI
 	add dx, 7		; Set DX back to status register (0x01F7)
 	in al, dx		; Delay ~400ns to allow drive to set new values of BSY and DRQ
@@ -125,7 +125,7 @@ writesectors:
 	jne writesectors_skip	; Not 256? No need to modify CL
 	xor rcx, rcx		; 0 translates to 256
 writesectors_skip:
-	
+
 	push rax		; Save RAX since we are about to overwrite it
 	mov dx, 0x01F2		; 0x01F2 - Sector count Port 7:0
 	mov al, cl		; Write CL sectors
