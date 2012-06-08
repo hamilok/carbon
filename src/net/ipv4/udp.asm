@@ -12,14 +12,12 @@ align 16
 ;  IN:	RCX = packet length
 ;	RSI = location of received UDP packet
 os_udp_handler:
-	push rsi
-	push rax
+  push rsi
+  push rax
 
-	
-
-	pop rax
-	pop rsi
-	ret
+  pop rax
+  pop rsi
+  ret
 ; -----------------------------------------------------------------------------
 
 
