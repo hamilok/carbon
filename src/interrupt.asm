@@ -57,7 +57,7 @@ keyboard_lowercase:
 	mov rbx, keylayoutupper
 	jmp keyboard_processkey
 
-keyboard_uppercase:	
+keyboard_uppercase:
 	mov rbx, keylayoutlower
 
 keyboard_processkey:			; Convert the scancode
@@ -447,7 +447,7 @@ exception_gate_main:
 	pop rax
 	and rax, 0x00000000000000FF	; Clear out everything in RAX except for AL
 	push rax
-	mov bl, 32
+	mov bl, 32                      ; Length of each message
 	mul bl				; AX = AL x BL
 	add rsi, rax			; Use the value in RAX as an offset to get to the right message
 	pop rax
