@@ -18,27 +18,27 @@ align 16
 ;  IN:	Nothing
 ; OUT:	RAX = MAC Address if Ethernet is enabled, otherwise 0
 os_ethernet_avail:
-	push rsi
-	push rcx
+  push rsi
+  push rcx
 
-	cld
-	xor eax, eax
-	cmp byte [os_NetEnabled], 0
-	je os_ethernet_avail_end
+  cld
+  xor eax, eax
+  cmp byte [os_NetEnabled], 0
+  je os_ethernet_avail_end
 
-	mov ecx, 6
-	mov rsi, os_NetMAC
+  mov ecx, 6
+  mov rsi, os_NetMAC
 os_ethernet_avail_loadMAC:
-	shl rax, 8
-	lodsb
-	sub ecx, 1
-	test ecx, ecx
-	jnz os_ethernet_avail_loadMAC
+  shl rax, 8
+  lodsb
+  sub ecx, 1
+  test ecx, ecx
+  jnz os_ethernet_avail_loadMAC
 
 os_ethernet_avail_end:
-	pop rcx
-	pop rsi
-	ret
+  pop rcx
+  pop rsi
+  ret
 ; -----------------------------------------------------------------------------
 
 
@@ -50,83 +50,83 @@ os_ethernet_avail_end:
 ;	 CX = Length of data
 ; OUT:	Nothing. All registers preserved
 os_ethernet_tx:
-	push rsi
-	push rdi
-	push rdx
-	push rcx
-	push rbx
-	push rax
+  push rsi
+  push rdi
+  push rdx
+  push rcx
+  push rbx
+  push rax
 
-	cmp byte [os_NetEnabled], 1
-	jne os_ethernet_tx_fail
-	cmp cx, 1500				; Fail if more then 1500 bytes
-	jg os_ethernet_tx_fail
+  cmp byte [os_NetEnabled], 1
+  jne os_ethernet_tx_fail
+  cmp cx, 1500				; Fail if more then 1500 bytes
+  jg os_ethernet_tx_fail
 
-	mov rax, os_EthernetBusyLock		; Lock the Ethernet so only one send can happen at a time
-	call os_smp_lock
+  mov rax, os_EthernetBusyLock		; Lock the Ethernet so only one send can happen at a time
+  call os_smp_lock
 
-	push rsi
-	mov rsi, rdi
-	mov rdi, os_ethernet_tx_buffer		; Build the packet to transfer at this location
-	; TODO: Ask the driver where in memory the packet should be assembled.
+  push rsi
+  mov rsi, rdi
+  mov rdi, os_ethernet_tx_buffer		; Build the packet to transfer at this location
+  ; TODO: Ask the driver where in memory the packet should be assembled.
 
-	; Copy destination MAC address
-	movsd
-	movsw
+  ; Copy destination MAC address
+  movsd
+  movsw
 
-	; Copy source MAC address
-	mov rsi, os_NetMAC
-	movsd
-	movsw
+  ; Copy source MAC address
+  mov rsi, os_NetMAC
+  movsd
+  movsw
 
-	; Set the EtherType/Length
-	cmp bx, 0
-	jne os_ethernet_tx_typeset		; If EtherType is not set then use the Data Length instead
-	mov bx, cx				; Length of data (Does not include header)
+  ; Set the EtherType/Length
+  cmp bx, 0
+  jne os_ethernet_tx_typeset		; If EtherType is not set then use the Data Length instead
+  mov bx, cx				; Length of data (Does not include header)
 os_ethernet_tx_typeset:
-	xchg bl, bh				; x86 is Little-endian but packets use Big-endian
-	mov [rdi], bx
-	add rdi, 2
+  xchg bl, bh				; x86 is Little-endian but packets use Big-endian
+  mov [rdi], bx
+  add rdi, 2
 
-	; Copy the packet data
-	pop rsi
-	mov rax, 0x000000000000FFFF
-	and rcx, rax				; Clear the top 48 bits
-	push rcx
-	rep movsb
-	pop rcx
+  ; Copy the packet data
+  pop rsi
+  mov rax, 0x000000000000FFFF
+  and rcx, rax				; Clear the top 48 bits
+  push rcx
+  rep movsb
+  pop rcx
 
-	; Add padding to the packet data if needed
-	cmp cx, 46				; Data needs to be at least 46 bytes (if not it needs to be padded)
-	jge os_ethernet_tx_nopadding
-	mov ax, 46
-	sub ax, cx				; Padding needed = 46 - CX
-	mov cx, ax
-	xor ax, ax
-	rep stosb				; Store 0x00 CX times
-	mov cx, 46
+  ; Add padding to the packet data if needed
+  cmp cx, 46				; Data needs to be at least 46 bytes (if not it needs to be padded)
+  jge os_ethernet_tx_nopadding
+  mov ax, 46
+  sub ax, cx				; Padding needed = 46 - CX
+  mov cx, ax
+  xor ax, ax
+  rep stosb				; Store 0x00 CX times
+  mov cx, 46
 os_ethernet_tx_nopadding:
 
-	xor eax, eax
-	stosd					; Store a blank CRC value
+  xor eax, eax
+  stosd					; Store a blank CRC value
 
 ; Call the send function of the ethernet card driver
-	add cx, 14				; Add 14 for the header bytes
-	mov rsi, os_ethernet_tx_buffer
-	call qword [os_net_transmit]
+  add cx, 14				; Add 14 for the header bytes
+  mov rsi, os_ethernet_tx_buffer
+  call qword [os_net_transmit]
 
-	mov rax, os_EthernetBusyLock
-	call os_smp_unlock
+  mov rax, os_EthernetBusyLock
+  call os_smp_unlock
 
 os_ethernet_tx_fail:
 
-	pop rax
-	pop rbx
-	pop rcx
-	pop rdx
-	pop rdi
-	pop rsi
-	ret
+  pop rax
+  pop rbx
+  pop rcx
+  pop rdx
+  pop rdi
+  pop rsi
+  ret
 ; -----------------------------------------------------------------------------
 
 
@@ -136,59 +136,59 @@ os_ethernet_tx_fail:
 ;	 CX = Length of frame
 ; OUT:	Nothing. All registers preserved
 os_ethernet_tx_raw:
-	push rsi
-	push rdi
-	push rdx
-	push rcx
-	push rbx
-	push rax
-	
-	cmp byte [os_NetEnabled], 1
-	jne os_ethernet_tx_raw_fail
-	cmp cx, 1500				; Fail if more then 1500 bytes
-	jg os_ethernet_tx_raw_fail
+  push rsi
+  push rdi
+  push rdx
+  push rcx
+  push rbx
+  push rax
+  
+  cmp byte [os_NetEnabled], 1
+  jne os_ethernet_tx_raw_fail
+  cmp cx, 1500				; Fail if more then 1500 bytes
+  jg os_ethernet_tx_raw_fail
 
-	mov rax, os_EthernetBusyLock		; Lock the Ethernet so only one send can happen at a time
-	call os_smp_lock
+  mov rax, os_EthernetBusyLock		; Lock the Ethernet so only one send can happen at a time
+  call os_smp_lock
 
-	; Copy the packet data
-	mov rdi, os_ethernet_tx_buffer		; Build the packet to transfer at this location
-	mov rax, 0x000000000000FFFF
-	and rcx, rax				; Clear the top 48 bits
-	push rcx
-	rep movsb
-	pop rcx
+  ; Copy the packet data
+  mov rdi, os_ethernet_tx_buffer		; Build the packet to transfer at this location
+  mov rax, 0x000000000000FFFF
+  and rcx, rax				; Clear the top 48 bits
+  push rcx
+  rep movsb
+  pop rcx
 
-	; Add padding to the packet data if needed
-	cmp cx, 46				; Data needs to be at least 46 bytes (if not it needs to be padded)
-	jge os_ethernet_tx_raw_nopadding
-	mov ax, 46
-	sub ax, cx				; Padding needed = 46 - CX
-	mov cx, ax
-	xor ax, ax
-	rep stosb				; Store 0x00 CX times
-	mov cx, 46
+  ; Add padding to the packet data if needed
+  cmp cx, 46				; Data needs to be at least 46 bytes (if not it needs to be padded)
+  jge os_ethernet_tx_raw_nopadding
+  mov ax, 46
+  sub ax, cx				; Padding needed = 46 - CX
+  mov cx, ax
+  xor ax, ax
+  rep stosb				; Store 0x00 CX times
+  mov cx, 46
 os_ethernet_tx_raw_nopadding:
 
-	xor eax, eax
-	stosd					; Store a blank CRC value
+  xor eax, eax
+  stosd					; Store a blank CRC value
 
 ; Call the send function of the ethernet card driver
-	mov rsi, os_ethernet_tx_buffer
-	call qword [os_net_transmit]
+  mov rsi, os_ethernet_tx_buffer
+  call qword [os_net_transmit]
 
-	mov rax, os_EthernetBusyLock
-	call os_smp_unlock
+  mov rax, os_EthernetBusyLock
+  call os_smp_unlock
 
 os_ethernet_tx_raw_fail:
 
-	pop rax
-	pop rbx
-	pop rcx
-	pop rdx
-	pop rdi
-	pop rsi
-	ret
+  pop rax
+  pop rbx
+  pop rcx
+  pop rdx
+  pop rdi
+  pop rsi
+  ret
 ; -----------------------------------------------------------------------------
 
 
@@ -198,49 +198,49 @@ os_ethernet_tx_raw_fail:
 ; OUT:	RCX = Length of packet
 ;	All other registers preserved
 os_ethernet_rx:
-	push rdi
-	push rsi
-	push rdx
-	push rax
+  push rdi
+  push rsi
+  push rdx
+  push rax
 
-	xor ecx, ecx
+  xor ecx, ecx
 
-	cmp byte [os_NetEnabled], 1
-	jne os_ethernet_rx_fail
+  cmp byte [os_NetEnabled], 1
+  jne os_ethernet_rx_fail
 
 ; Is there anything in the ring buffer?
-	mov al, byte [os_EthernetBuffer_C1]
-	mov dl, byte [os_EthernetBuffer_C2]
-	cmp al, dl				; If both counters are equal then the buffer is empty
-	je os_ethernet_rx_fail
+  mov al, byte [os_EthernetBuffer_C1]
+  mov dl, byte [os_EthernetBuffer_C2]
+  cmp al, dl				; If both counters are equal then the buffer is empty
+  je os_ethernet_rx_fail
 
 ; Read the packet from the ring buffer to RDI
-	mov rsi, os_EthernetBuffer
-	xor rax, rax
-	mov al, byte [os_EthernetBuffer_C1]
-	push rax				; Save the ring element value
-	shl rax, 11				; Quickly multiply RAX by 2048
-	add rsi, rax				; RSI points to the packet in the ring buffer
-	lodsw					; Load the packet length
-	mov cx, ax				; Copy the packet length to RCX
-	push rcx
-	rep movsb				; Copy the packet to RDI
-	pop rcx
-	pop rax					; Restore the ring element value
-	add al, 1
-	cmp al, 128				; Max element number is 127
-	jne os_ethernet_rx_buffer_nowrap
-	xor al, al
+  mov rsi, os_EthernetBuffer
+  xor rax, rax
+  mov al, byte [os_EthernetBuffer_C1]
+  push rax				; Save the ring element value
+  shl rax, 11				; Quickly multiply RAX by 2048
+  add rsi, rax				; RSI points to the packet in the ring buffer
+  lodsw					; Load the packet length
+  mov cx, ax				; Copy the packet length to RCX
+  push rcx
+  rep movsb				; Copy the packet to RDI
+  pop rcx
+  pop rax					; Restore the ring element value
+  add al, 1
+  cmp al, 128				; Max element number is 127
+  jne os_ethernet_rx_buffer_nowrap
+  xor al, al
 os_ethernet_rx_buffer_nowrap:
-	mov byte [os_EthernetBuffer_C1], al
+  mov byte [os_EthernetBuffer_C1], al
 
 os_ethernet_rx_fail:
 
-	pop rax
-	pop rdx
-	pop rsi
-	pop rdi
-	ret
+  pop rax
+  pop rdx
+  pop rsi
+  pop rdi
+  ret
 ; -----------------------------------------------------------------------------
 
 
@@ -250,12 +250,12 @@ os_ethernet_rx_fail:
 ; OUT:	RAX = Type of interrupt trigger
 ;	All other registers preserved
 os_ethernet_ack_int:
-	push rdx
+  push rdx
 
-	call qword [os_net_ack_int]
+  call qword [os_net_ack_int]
 
-	pop rdx
-	ret
+  pop rdx
+  ret
 ; -----------------------------------------------------------------------------
 
 
@@ -265,21 +265,21 @@ os_ethernet_ack_int:
 ; OUT:	RCX = Length of packet
 ;	All other registers preserved
 os_ethernet_rx_from_interrupt:
-	push rdi
-	push rsi
-	push rdx
-	push rax
+  push rdi
+  push rsi
+  push rdx
+  push rax
 
-	xor ecx, ecx
+  xor ecx, ecx
 
 ; Call the poll function of the ethernet card driver
-	call qword [os_net_poll]
+  call qword [os_net_poll]
 
-	pop rax
-	pop rdx
-	pop rsi
-	pop rdi
-	ret
+  pop rax
+  pop rdx
+  pop rsi
+  pop rdi
+  ret
 ; -----------------------------------------------------------------------------
 
 
@@ -288,11 +288,11 @@ os_ethernet_rx_from_interrupt:
 ; IN:  RDI = Memory location where the driver name string should be stored
 ; All registers are preserved
 os_get_ethernet_driver:
-	push rsi
-	mov rsi, [NIC_name_ptr]
-	call os_string_copy
-	pop rsi
-	ret
+  push rsi
+  mov rsi, [NIC_name_ptr]
+  call os_string_copy
+  pop rsi
+  ret
 ; -----------------------------------------------------------------------------
 
 
@@ -301,14 +301,14 @@ os_get_ethernet_driver:
 ; IN:  RDI = Memory location to put the system MAC address
 ; All registers are preserved
 os_get_mac_addr:
-	push rsi
-	push rdi
-	mov rsi, os_NetMAC
-	movsd
-	movsw
-	pop rdi
-	pop rsi
-	ret
+  push rsi
+  push rdi
+  mov rsi, os_NetMAC
+  movsd
+  movsw
+  pop rdi
+  pop rsi
+  ret
 ; -----------------------------------------------------------------------------
 
 
@@ -318,32 +318,32 @@ os_get_mac_addr:
 ;      RDI = Location where string should be stored
 ; All registers are preserved
 os_mac_addr_to_str:
-	push rax
-	push rcx
-	push rsi
-	push rdi
-	xor rax, rax
-	lodsb
-	call os_byte_to_hex_string
-	add rdi, 2
-	mov rcx, 5
+  push rax
+  push rcx
+  push rsi
+  push rdi
+  xor rax, rax
+  lodsb
+  call os_byte_to_hex_string
+  add rdi, 2
+  mov rcx, 5
 os_mac_addr_to_str_next_component:
-	mov al, ':'
-	mov byte [rdi], al
-	inc rdi
-	lodsb
-	call os_byte_to_hex_string
-	add rdi, 2
-	dec rcx
-	cmp rcx, 0
-	jne os_mac_addr_to_str_next_component
-	xor al, al
-	stosb
-	pop rdi
-	pop rsi
-	pop rcx
-	pop rax
-	ret
+  mov al, ':'
+  mov byte [rdi], al
+  inc rdi
+  lodsb
+  call os_byte_to_hex_string
+  add rdi, 2
+  dec rcx
+  cmp rcx, 0
+  jne os_mac_addr_to_str_next_component
+  xor al, al
+  stosb
+  pop rdi
+  pop rsi
+  pop rcx
+  pop rax
+  ret
 ; -----------------------------------------------------------------------------
 
 

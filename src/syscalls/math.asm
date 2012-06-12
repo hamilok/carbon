@@ -9,9 +9,9 @@ align 16
 ; OUT:	RDX,RAX = Result
 ; Note:	Carry set if overflow
 os_oword_add:
-	add rax, rbx
-	adc rdx, rcx
-	ret
+  add rax, rbx
+  adc rdx, rcx
+  ret
 ; -----------------------------------------------------------------------------
 
 

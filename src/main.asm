@@ -5,14 +5,14 @@ ORG 0x0000000000100000
 %DEFINE CARBONOS_API_VER 1
 
 kernel_start:
-  jmp start		; Skip over the function call index
+  jmp start			; Skip over the function call index
   nop
   db 'CARBON'
 
-  align 16		; 0x0010
-  jmp os_print_string	; Jump to function
+  align 16			; 0x0010
+  jmp os_print_string		; Jump to function
   align 8
-  dq os_print_string	; Memory address of function
+  dq os_print_string		; Memory address of function
 
   align 8			; 0x0020
   jmp os_print_char

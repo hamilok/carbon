@@ -22,7 +22,7 @@ align 16
 ;	RDI = Memory location where file will be loaded to
 ; OUT:	Carry is set if the file was not found or an error occured
 os_file_read:
-	jmp os_fat16_file_read
+  jmp os_fat16_file_read
 ; -----------------------------------------------------------------------------
 
 
@@ -33,7 +33,7 @@ os_file_read:
 ;	RCX = Number of bytes to write
 ; OUT:	Carry is set if an error occured
 os_file_write:
-	jmp os_fat16_file_write
+  jmp os_fat16_file_write
 ; -----------------------------------------------------------------------------
 
 
@@ -43,7 +43,7 @@ os_file_write:
 ;	RDI = Memory location of new file name
 ; OUT:	Carry is set if the file was not found or an error occured
 os_file_rename:
-	jmp $
+  jmp $
 ; -----------------------------------------------------------------------------
 
 
@@ -52,7 +52,7 @@ os_file_rename:
 ; IN:	RSI = Memory location of file name to delete
 ; OUT:	Carry is set if the file was not found or an error occured
 os_file_delete:
-	jmp os_fat16_file_delete
+  jmp os_fat16_file_delete
 ; -----------------------------------------------------------------------------
 
 
@@ -61,7 +61,7 @@ os_file_delete:
 ; IN:	RDI = location to store list
 ; OUT:	RDI = pointer to end of list
 os_file_get_list:
-	jmp os_fat16_get_file_list
+  jmp os_fat16_get_file_list
 ; -----------------------------------------------------------------------------
 
 
@@ -71,7 +71,7 @@ os_file_get_list:
 ; OUT:	RCX = Size in bytes
 ;	Carry is set if the file was not found or an error occured
 os_file_get_size:
-	jmp os_fat16_get_file_size
+  jmp os_fat16_get_file_size
 ; -----------------------------------------------------------------------------
 
 

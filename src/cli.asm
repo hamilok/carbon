@@ -47,56 +47,56 @@ endofcommand:
   mov bl, 0x00
   call os_string_change_char
 
-	pop rsi				; Pop the command string
-	call os_string_uppercase	; Convert to uppercase for comparison
+  pop rsi				; Pop the command string
+  call os_string_uppercase	; Convert to uppercase for comparison
 
-	mov rdi, cls_string		; 'CLS' entered?
-	call os_string_compare
-	jc near clear_screen
+  mov rdi, cls_string		; 'CLS' entered?
+  call os_string_compare
+  jc near clear_screen
 
-	mov rdi, list_string		; 'LS' entered?
-	call os_string_compare
-	jc near list
+  mov rdi, list_string		; 'LS' entered?
+  call os_string_compare
+  jc near list
 
-	mov rdi, ver_string		; 'VER' entered?
-	call os_string_compare
-	jc near print_ver
+  mov rdi, ver_string		; 'VER' entered?
+  call os_string_compare
+  jc near print_ver
 
-	mov rdi, date_string		; 'DATE' entered?
-	call os_string_compare
-	jc near date
+  mov rdi, date_string		; 'DATE' entered?
+  call os_string_compare
+  jc near date
 
-	mov rdi, exit_string		; 'EXIT' entered?
-	call os_string_compare
-	jc near exit
+  mov rdi, exit_string		; 'EXIT' entered?
+  call os_string_compare
+  jc near exit
 
-	mov rdi, help_string		; 'HELP' entered?
-	call os_string_compare
-	jc near print_help
+  mov rdi, help_string		; 'HELP' entered?
+  call os_string_compare
+  jc near print_help
 
-	mov rdi, node_string		; 'NODE' entered?
-	call os_string_compare
-	jc near node
+  mov rdi, node_string		; 'NODE' entered?
+  call os_string_compare
+  jc near node
 
-	mov rdi, time_string		; 'TIME' entered?
-	call os_string_compare
-	jc near time
+  mov rdi, time_string		; 'TIME' entered?
+  call os_string_compare
+  jc near time
 
-	mov rdi, debug_string		; 'DEBUG' entered?
-	call os_string_compare
-	jc near debug
+  mov rdi, debug_string		; 'DEBUG' entered?
+  call os_string_compare
+  jc near debug
 
-	mov rdi, reboot_string		; 'REBOOT' entered?
-	call os_string_compare
-	jc near reboot
+  mov rdi, reboot_string		; 'REBOOT' entered?
+  call os_string_compare
+  jc near reboot
 
-	mov rdi, testzone_string	; 'TESTZONE' entered?
-	call os_string_compare
-	jc near testzone
+  mov rdi, testzone_string	; 'TESTZONE' entered?
+  call os_string_compare
+  jc near testzone
 
-	mov rdi, ifconfig_string	; 'IF' entered?
-	call os_string_compare
-	jc near ifconfig
+  mov rdi, ifconfig_string	; 'IF' entered?
+  call os_string_compare
+  jc near ifconfig
 
 ; At this point it is not one of the built-in CLI functions. Prepare to check the filesystem.
   mov al, '.'
@@ -175,7 +175,7 @@ node:
 
 align 16
 testzone:
-	xchg bx, bx			; Bochs Magic Breakpoint
+  xchg bx, bx			; Bochs Magic Breakpoint
 
 ;	call os_ethernet_avail
 ;	call os_debug_dump_rax
@@ -194,7 +194,7 @@ testzone:
 ;	cpuid				; Execute a serializing instruction to force every preceding instruction to complete before allowing the program to continue
 ;	rdtsc
 ;	mov r15d, eax
-	; Benchmark code start
+  ; Benchmark code start
 
 ;	sub rsp, 0x28
 ;	mov [rsp + 0x20], rax
@@ -220,7 +220,7 @@ testzone:
 ;	pop rax
 ;	pop rax
 
-	; Benchmark code finish
+  ; Benchmark code finish
 ;	xor eax, eax			; Out-of-order execution can cause RDTSC to be executed later than expected
 ;	cpuid				; Execute a serializing instruction to force every preceding instruction to complete before allowing the program to continue
 ;	rdtsc

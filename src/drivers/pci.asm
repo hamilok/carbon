@@ -11,26 +11,26 @@ align 16
 ; OUT:	EAX = Register information
 ;	All other registers preserved
 os_pci_read_reg:
-	push rdx
-	push rcx
-	push rbx
+  push rdx
+  push rcx
+  push rbx
 
-	shl ebx, 16			; Move Bus number to bits 23 - 16
-	shl ecx, 11			; Move Device number to bits 15 - 11
-	mov bx, cx
-	shl edx, 2
-	mov bl, dl
-	and ebx, 0x00ffffff		; Clear bits 31 - 24
-	or ebx, 0x80000000		; Set bit 31
-	mov eax, ebx
-	mov dx, PCI_CONFIG_ADDRESS
-	out dx, eax
-	mov dx, PCI_CONFIG_DATA
-	in eax, dx
+  shl ebx, 16			; Move Bus number to bits 23 - 16
+  shl ecx, 11			; Move Device number to bits 15 - 11
+  mov bx, cx
+  shl edx, 2
+  mov bl, dl
+  and ebx, 0x00ffffff		; Clear bits 31 - 24
+  or ebx, 0x80000000		; Set bit 31
+  mov eax, ebx
+  mov dx, PCI_CONFIG_ADDRESS
+  out dx, eax
+  mov dx, PCI_CONFIG_DATA
+  in eax, dx
 
-	pop rbx
-	pop rcx
-	pop rdx
+  pop rbx
+  pop rcx
+  pop rdx
 ret
 ; -----------------------------------------------------------------------------
 
@@ -43,46 +43,46 @@ ret
 ;	Carry set if no matching device was found
 ;	All other registers preserved
 os_pci_find_device:
-	push rdx
+  push rdx
 
-	mov rbx, rax			; Save device and vendor IDs to RBX
-	xor rcx, rcx
-	xor rax, rax
+  mov rbx, rax			; Save device and vendor IDs to RBX
+  xor rcx, rcx
+  xor rax, rax
 
-	mov ecx, 0x80000000		; Bit 31 must be set
+  mov ecx, 0x80000000		; Bit 31 must be set
 
 os_pci_find_device_check_next:
-	mov eax, ecx
-	mov dx, PCI_CONFIG_ADDRESS
-	out dx, eax
-	mov dx, PCI_CONFIG_DATA
-	in eax, dx			; EAX now holds the Device and Vendor ID
-	cmp eax, ebx
-	je os_pci_find_device_found
-	add ecx, 0x800
-	cmp ecx, 0x81000000		; The end has been reached (already looked at 8192 devices)
-	jne os_pci_find_device_check_next
+  mov eax, ecx
+  mov dx, PCI_CONFIG_ADDRESS
+  out dx, eax
+  mov dx, PCI_CONFIG_DATA
+  in eax, dx			; EAX now holds the Device and Vendor ID
+  cmp eax, ebx
+  je os_pci_find_device_found
+  add ecx, 0x800
+  cmp ecx, 0x81000000		; The end has been reached (already looked at 8192 devices)
+  jne os_pci_find_device_check_next
 
 os_pci_find_device_not_found:
-	stc				; Set carry (failure)
-	jmp os_pci_find_device_end
+  stc				; Set carry (failure)
+  jmp os_pci_find_device_end
 
 os_pci_find_device_found:		; ECX bits 23 - 16 is the Bus # and bits 15 - 11 is the Device/Slot #
-	xor rax, rax
-	xor rbx, rbx
-	shr ecx, 11			; Device/Slot number is now bits 4 - 0
-	mov bl, cl			; BL contains Device/Slot number
-	and bl, 00011111b		; Clear the top 3 bits, BL contains the Device/Slot number
-	shr ecx, 5			; Bus number is now bits 7 - 0
-	mov al, cl			; AL contains the Bus number
-	xor ecx, ecx
-	mov cl, bl
-	mov bl, al
-	clc				; Clear carry (success)
+  xor rax, rax
+  xor rbx, rbx
+  shr ecx, 11			; Device/Slot number is now bits 4 - 0
+  mov bl, cl			; BL contains Device/Slot number
+  and bl, 00011111b		; Clear the top 3 bits, BL contains the Device/Slot number
+  shr ecx, 5			; Bus number is now bits 7 - 0
+  mov al, cl			; AL contains the Bus number
+  xor ecx, ecx
+  mov cl, bl
+  mov bl, al
+  clc				; Clear carry (success)
 
 os_pci_find_device_end:
-	pop rdx
-	ret
+  pop rdx
+  ret
 ; -----------------------------------------------------------------------------
 
 
@@ -92,36 +92,36 @@ os_pci_find_device_end:
 ; OUT:	Nothing, All registers preserved
 ; http://pci-ids.ucw.cz/read/PC/ - Online list of Device and Vendor ID's
 os_pci_dump_devices:
-	push rdx
-	push rcx
-	push rbx
-	push rax
+  push rdx
+  push rcx
+  push rbx
+  push rax
 
-	xor rcx, rcx
-	xor rax, rax
+  xor rcx, rcx
+  xor rax, rax
 
-	mov ecx, 0x80000000		; Bit 31 must be set
+  mov ecx, 0x80000000		; Bit 31 must be set
 
 os_pci_dump_devices_check_next:
-	mov eax, ecx
-	mov dx, PCI_CONFIG_ADDRESS
-	out dx, eax
-	mov dx, PCI_CONFIG_DATA
-	in eax, dx			; EAX now holds the Device and Vendor ID
-	cmp eax, 0xffffffff		; 0xFFFFFFFF means no device present on that Bus and Slot
-	je os_pci_dump_devices_nothing_there
-	call os_debug_dump_eax		; Print the Device and Vendor ID (DDDDVVVV)
-	call os_print_newline
+  mov eax, ecx
+  mov dx, PCI_CONFIG_ADDRESS
+  out dx, eax
+  mov dx, PCI_CONFIG_DATA
+  in eax, dx			; EAX now holds the Device and Vendor ID
+  cmp eax, 0xffffffff		; 0xFFFFFFFF means no device present on that Bus and Slot
+  je os_pci_dump_devices_nothing_there
+  call os_debug_dump_eax		; Print the Device and Vendor ID (DDDDVVVV)
+  call os_print_newline
 os_pci_dump_devices_nothing_there:
-	add ecx, 0x800
-	cmp ecx, 0x81000000		; The end has been reached (already looked at 8192 devices)
-	jne os_pci_dump_devices_check_next
+  add ecx, 0x800
+  cmp ecx, 0x81000000		; The end has been reached (already looked at 8192 devices)
+  jne os_pci_dump_devices_check_next
 
 os_pci_dump_devices_end:
-	pop rax
-	pop rbx
-	pop rcx
-	pop rdx
+  pop rax
+  pop rbx
+  pop rcx
+  pop rdx
 ret
 ; -----------------------------------------------------------------------------
 
