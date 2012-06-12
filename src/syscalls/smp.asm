@@ -1,3 +1,9 @@
+; =============================================================================
+; BareMetal -- a 64-bit OS written in Assembly for x86-64 systems
+; Copyright (C) 2008-2012 Return Infinity
+; =============================================================================
+
+
 align 16
 db 'DEBUG: SMP      '
 align 16
@@ -116,7 +122,7 @@ os_smp_enqueue_spin:
   stosq				; Store the code address from RAX
   mov rax, rsi
   stosq				; Store the variable
-  
+
   add word [os_QueueLen], 1
   shr rcx, 4			; Quickly divide RCX by 16
   add cx, 1

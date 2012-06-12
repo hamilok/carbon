@@ -1,3 +1,9 @@
+; =============================================================================
+; BareMetal -- a 64-bit OS written in Assembly for x86-64 systems
+; Copyright (C) 2008-2012 Return Infinity
+; =============================================================================
+
+
 align 16
 db 'DEBUG: MISC     '
 align 16
@@ -358,7 +364,7 @@ os_get_argv_nextchar:
   dec cl
   cmp cl, 0
   jne os_get_argv_nextchar
-  
+
 os_get_argv_end:
   pop rax
   pop rcx
@@ -379,7 +385,7 @@ os_get_timecounter:
 
 ; -----------------------------------------------------------------------------
 ; os_hide_statusbar -- Hide the system status bar
-; IN:	
+; IN:
 os_hide_statusbar:
   mov byte [os_show_sysstatus], 0
   ret
@@ -388,12 +394,12 @@ os_hide_statusbar:
 
 ; -----------------------------------------------------------------------------
 ; os_show_statusbar -- Show the system status bar
-; IN:	
+; IN:
 os_show_statusbar:
   mov byte [os_show_sysstatus], 1
   ret
 ; -----------------------------------------------------------------------------
 
-  
+
 ; =============================================================================
 ; EOF

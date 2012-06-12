@@ -1,3 +1,9 @@
+; =============================================================================
+; BareMetal -- a 64-bit OS written in Assembly for x86-64 systems
+; Copyright (C) 2008-2012 Return Infinity
+; =============================================================================
+
+
 align 16
 db 'DEBUG: SCREEN   '
 align 16
@@ -41,7 +47,7 @@ os_move_cursor:
   out dx, ax
   inc ax
   mov ah, bl
-  out dx, ax	
+  out dx, ax
 
   pop rax
   pop rbx
@@ -244,7 +250,7 @@ os_print_chars_newline_skip_LF:
 os_print_chars_newline_skip_LF_nosub:
   add rsi, 1
   call os_print_newline
-  jmp os_print_chars_nextchar	
+  jmp os_print_chars_nextchar
 
 os_print_chars_done:
   call os_screen_update

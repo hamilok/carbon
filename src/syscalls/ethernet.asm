@@ -1,3 +1,9 @@
+; =============================================================================
+; BareMetal -- a 64-bit OS written in Assembly for x86-64 systems
+; Copyright (C) 2008-2012 Return Infinity
+; =============================================================================
+
+
 align 16
 db 'DEBUG: ETHERNET '
 align 16
@@ -10,7 +16,7 @@ align 16
 ;	EtherType/Length (2 bytes)
 ; Payload (46 - 1500 bytes)
 ; CRC (4 bytes)
-; Network card handles the Preamble (7 bytes), Start-of-Frame-Delimiter (1 byte), and Interframe Gap (12 bytes) 
+; Network card handles the Preamble (7 bytes), Start-of-Frame-Delimiter (1 byte), and Interframe Gap (12 bytes)
 
 
 ; -----------------------------------------------------------------------------

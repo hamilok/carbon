@@ -1,3 +1,9 @@
+; =============================================================================
+; BareMetal -- a 64-bit OS written in Assembly for x86-64 systems
+; Copyright (C) 2008-2012 Return Infinity
+; =============================================================================
+
+
 align 16
 db 'DEBUG: SERIAL   '
 align 16
@@ -27,7 +33,7 @@ os_serial_send_wait:
 
 ; -----------------------------------------------------------------------------
 ; os_serial_recv -- Receive a byte from the primary serial port
-; IN:	Nothing 
+; IN:	Nothing
 ; OUT:	AL  = Byte recevied
 ;	Carry flag is set if a byte was received, otherwise AL is trashed
 ;	All other registers preserved

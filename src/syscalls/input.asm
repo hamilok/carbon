@@ -1,3 +1,9 @@
+; =============================================================================
+; BareMetal -- a 64-bit OS written in Assembly for x86-64 systems
+; Copyright (C) 2008-2012 Return Infinity
+; =============================================================================
+
+
 align 16
 db 'DEBUG: INPUT    '
 align 16
@@ -17,7 +23,7 @@ os_input_key_check:
   stc			; set the carry flag
   ret
 
-os_input_key_check_no_key:	
+os_input_key_check_no_key:
   xor al, al		; mov al, 0x00
   clc			; clear the carry flag
   ret
